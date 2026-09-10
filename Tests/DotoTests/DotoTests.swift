@@ -249,24 +249,27 @@ final class DotoTests: XCTestCase {
         let artifactDir = "/Users/ahmetkamercivi/.gemini/antigravity/brain/9cc66d99-0f43-42e2-a81e-c052da4fc5b6"
         let assetsDir = "/Users/ahmetkamercivi/Documents/antigravity/happy-mendeleev/doto/assets"
 
+        let cardSize = CGSize(width: 390, height: 490)
+
         // 1. Tasks View Dark Mode
         let tasksDarkCard = ZStack {
             RadialGradient(
                 colors: [Color(white: 0.16), Color(white: 0.08), Color(white: 0.03)],
                 center: .center,
                 startRadius: 40,
-                endRadius: 420
+                endRadius: 360
             )
 
             DotoPopoverView(taskManager: taskManager, noteManager: noteManager)
                 .environment(\.colorScheme, .dark)
-                .shadow(color: Color.black.opacity(0.65), radius: 30, x: 0, y: 18)
-                .shadow(color: Color.black.opacity(0.40), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.black.opacity(0.55), radius: 18, x: 0, y: 10)
+                .shadow(color: Color.black.opacity(0.35), radius: 6, x: 0, y: 3)
         }
-        .frame(width: 480, height: 590)
+        .frame(width: cardSize.width, height: cardSize.height)
 
-        render2xRetina(view: tasksDarkCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_tasks_dark.png")
-        render2xRetina(view: tasksDarkCard, size: CGSize(width: 480, height: 590), path: "\(artifactDir)/doto_actual_ui_dark.png")
+        render2xRetina(view: tasksDarkCard, size: cardSize, path: "\(assetsDir)/doto_tasks_dark.png")
+        render2xRetina(view: tasksDarkCard, size: cardSize, path: "\(assetsDir)/doto_tasks_dark_v2.png")
+        render2xRetina(view: tasksDarkCard, size: cardSize, path: "\(artifactDir)/doto_actual_ui_dark.png")
 
         // 2. Notes View Dark Mode
         let notesDarkWindow = VStack(spacing: 10) {
@@ -294,18 +297,19 @@ final class DotoTests: XCTestCase {
                 colors: [Color(white: 0.16), Color(white: 0.08), Color(white: 0.03)],
                 center: .center,
                 startRadius: 40,
-                endRadius: 420
+                endRadius: 360
             )
 
             notesDarkWindow
-                .shadow(color: Color.black.opacity(0.65), radius: 30, x: 0, y: 18)
-                .shadow(color: Color.black.opacity(0.40), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.black.opacity(0.55), radius: 18, x: 0, y: 10)
+                .shadow(color: Color.black.opacity(0.35), radius: 6, x: 0, y: 3)
         }
-        .frame(width: 480, height: 590)
+        .frame(width: cardSize.width, height: cardSize.height)
 
-        render2xRetina(view: notesDarkCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_due_dark.png")
-        render2xRetina(view: notesDarkCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_notes_dark.png")
-        render2xRetina(view: notesDarkCard, size: CGSize(width: 480, height: 590), path: "\(artifactDir)/doto_notes_ui_dark.png")
+        render2xRetina(view: notesDarkCard, size: cardSize, path: "\(assetsDir)/doto_due_dark.png")
+        render2xRetina(view: notesDarkCard, size: cardSize, path: "\(assetsDir)/doto_notes_dark.png")
+        render2xRetina(view: notesDarkCard, size: cardSize, path: "\(assetsDir)/doto_notes_dark_v2.png")
+        render2xRetina(view: notesDarkCard, size: cardSize, path: "\(artifactDir)/doto_notes_ui_dark.png")
 
         // 3. Notes View Light Mode
         let notesLightWindow = VStack(spacing: 10) {
@@ -333,17 +337,18 @@ final class DotoTests: XCTestCase {
                 colors: [Color(white: 0.98), Color(white: 0.92), Color(white: 0.86)],
                 center: .center,
                 startRadius: 40,
-                endRadius: 420
+                endRadius: 360
             )
 
             notesLightWindow
-                .shadow(color: Color.black.opacity(0.18), radius: 30, x: 0, y: 18)
-                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.black.opacity(0.18), radius: 18, x: 0, y: 10)
+                .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
         }
-        .frame(width: 480, height: 590)
+        .frame(width: cardSize.width, height: cardSize.height)
 
-        render2xRetina(view: notesLightCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_notes_light.png")
-        render2xRetina(view: notesLightCard, size: CGSize(width: 480, height: 590), path: "\(artifactDir)/doto_notes_ui_light.png")
+        render2xRetina(view: notesLightCard, size: cardSize, path: "\(assetsDir)/doto_notes_light.png")
+        render2xRetina(view: notesLightCard, size: cardSize, path: "\(assetsDir)/doto_notes_light_v2.png")
+        render2xRetina(view: notesLightCard, size: cardSize, path: "\(artifactDir)/doto_notes_ui_light.png")
 
         // 4. Tasks View Light Mode
         let tasksLightCard = ZStack {
@@ -351,18 +356,19 @@ final class DotoTests: XCTestCase {
                 colors: [Color(white: 0.98), Color(white: 0.92), Color(white: 0.86)],
                 center: .center,
                 startRadius: 40,
-                endRadius: 420
+                endRadius: 360
             )
 
             DotoPopoverView(taskManager: taskManager, noteManager: noteManager)
                 .environment(\.colorScheme, .light)
-                .shadow(color: Color.black.opacity(0.18), radius: 30, x: 0, y: 18)
-                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.black.opacity(0.18), radius: 18, x: 0, y: 10)
+                .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
         }
-        .frame(width: 480, height: 590)
+        .frame(width: cardSize.width, height: cardSize.height)
 
-        render2xRetina(view: tasksLightCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_tasks_light.png")
-        render2xRetina(view: tasksLightCard, size: CGSize(width: 480, height: 590), path: "\(artifactDir)/doto_actual_ui_light.png")
+        render2xRetina(view: tasksLightCard, size: cardSize, path: "\(assetsDir)/doto_tasks_light.png")
+        render2xRetina(view: tasksLightCard, size: cardSize, path: "\(assetsDir)/doto_tasks_light_v2.png")
+        render2xRetina(view: tasksLightCard, size: cardSize, path: "\(artifactDir)/doto_actual_ui_light.png")
     }
 
     @MainActor
