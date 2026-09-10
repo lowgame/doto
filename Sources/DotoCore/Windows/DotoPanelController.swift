@@ -27,6 +27,9 @@ public final class DotoPanelController: NSObject, NSWindowDelegate {
         setupStatusItem()
         setupPanel()
         NotificationManager.shared.requestAuthorization()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            self?.statusItemClicked()
+        }
     }
 
     // MARK: - Main Menu (Enables standard Cmd+A, Cmd+C, Cmd+V, Cmd+Z shortcuts)
