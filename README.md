@@ -12,9 +12,9 @@
 <br/>
 
 <p align="center">
-  <img src="assets/doto_tasks_dark.png" width="30%" alt="Tasks Dark Mode" />
-  <img src="assets/doto_due_dark.png" width="30%" alt="Due In 5 Days" />
-  <img src="assets/doto_notes_light.png" width="30%" alt="Tabbed Notes Light Mode" />
+  <img src="assets/doto_tasks_dark.png" width="31%" alt="Tasks & Habits" />
+  <img src="assets/doto_notes_dark.png" width="31%" alt="Tabbed Scratchpad & Search" />
+  <img src="assets/doto_notes_light.png" width="31%" alt="Light Mode" />
 </p>
 
 *Strictly 3 colors. Zero icons. Zero clutter. Pure typographic geometry.*

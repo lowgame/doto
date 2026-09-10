@@ -112,7 +112,12 @@ public final class NoteManager: ObservableObject {
         return appFolder.appendingPathComponent("notes.json")
     }
 
+    private var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
     private var iCloudDocsURL: URL? {
+        guard !isRunningTests else { return nil }
         let home = fileManager.homeDirectoryForCurrentUser
         let cloudContainer = home.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs", isDirectory: true)
         if fileManager.fileExists(atPath: cloudContainer.path) {

@@ -172,64 +172,197 @@ final class DotoTests: XCTestCase {
     }
 
     @MainActor
+    private func render2xRetina(view: some View, size: CGSize, path: String) {
+        let hosting = NSHostingView(rootView: view)
+        hosting.frame = NSRect(origin: .zero, size: size)
+
+        let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.contentView = hosting
+        hosting.layoutSubtreeIfNeeded()
+
+        let scale: CGFloat = 2.0
+        let pixelWidth = Int(size.width * scale)
+        let pixelHeight = Int(size.height * scale)
+
+        if let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: pixelWidth,
+            pixelsHigh: pixelHeight,
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        ) {
+            rep.size = size
+            NSGraphicsContext.saveGraphicsState()
+            if let context = NSGraphicsContext(bitmapImageRep: rep) {
+                context.imageInterpolation = .high
+                NSGraphicsContext.current = context
+                hosting.displayIgnoringOpacity(hosting.bounds, in: context)
+            }
+            NSGraphicsContext.restoreGraphicsState()
+
+            if let pngData = rep.representation(using: .png, properties: [:]) {
+                try? pngData.write(to: URL(fileURLWithPath: path))
+            }
+        }
+    }
+
+    @MainActor
     func testGenerateMarketingScreenshots() {
-        let manager = TaskManager()
-        let sampleTasks = [
+        let taskManager = TaskManager()
+        taskManager.tasks = [
+            TaskItem(title: "Launch doto on Product Hunt", isCompleted: false, dueDate: Calendar.current.date(byAdding: .day, value: 2, to: Date())),
             TaskItem(title: "Morning focus session", isCompleted: false, isRepeat: true),
             TaskItem(title: "Refactor core design system tokens", isCompleted: false, dueDate: Calendar.current.date(byAdding: .day, value: 1, to: Date())),
-            TaskItem(title: "Ship doto to macOS menu bar", isCompleted: false, dueDate: Calendar.current.date(byAdding: .day, value: 2, to: Date())),
-            TaskItem(title: "Audit liquid glass specular reflections", isCompleted: true, completedAt: Date(), isRepeat: false),
-            TaskItem(title: "Archive previous sprint notes", isCompleted: true, completedAt: Date(), isRepeat: false)
+            TaskItem(title: "Audit liquid glass specular reflections", isCompleted: false),
+            TaskItem(title: "Ship v1.0 release bundle to GitHub", isCompleted: true, completedAt: Date()),
+            TaskItem(title: "Implement ⌘A and keyboard navigation", isCompleted: true, completedAt: Date())
         ]
-        manager.tasks = sampleTasks
+
+        let noteManager = NoteManager()
+        noteManager.notes = [
+            NoteItem(
+                title: "launch",
+                content: """
+                # v1.0 Launch Checklist
+
+                - 100% monochrome palette (#000, #8E8E93, #FFF)
+                - Sub-millisecond startup latency
+                - Automatic iCloud Drive mirror sync
+                - Two-click permanent history purge
+                - Native Liquid Glass material
+
+                "Simplicity is prerequisite for reliability."
+                """
+            ),
+            NoteItem(title: "ideas", content: "- Offline-first sync\n- Global keyboard summon shortcut\n- Quick markdown preview"),
+            NoteItem(title: "scratch", content: "")
+        ]
+        noteManager.selectNote(id: noteManager.notes[0].id)
 
         let artifactDir = "/Users/ahmetkamercivi/.gemini/antigravity/brain/9cc66d99-0f43-42e2-a81e-c052da4fc5b6"
+        let assetsDir = "/Users/ahmetkamercivi/Documents/antigravity/happy-mendeleev/doto/assets"
 
-        // Render Dark Mode
-        let darkView = DotoPopoverView(taskManager: manager)
-            .environment(\.colorScheme, .dark)
-            .frame(width: 350, height: 460)
+        // 1. Tasks View Dark Mode
+        let tasksDarkCard = ZStack {
+            RadialGradient(
+                colors: [Color(white: 0.16), Color(white: 0.08), Color(white: 0.03)],
+                center: .center,
+                startRadius: 40,
+                endRadius: 420
+            )
 
-        let darkWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 350, height: 460),
-            styleMask: [.borderless],
-            backing: .buffered,
-            defer: false
-        )
-        let darkHosting = NSHostingView(rootView: darkView)
-        darkHosting.frame = NSRect(x: 0, y: 0, width: 350, height: 460)
-        darkWindow.contentView = darkHosting
-        darkHosting.layoutSubtreeIfNeeded()
-
-        if let rep = darkHosting.bitmapImageRepForCachingDisplay(in: darkHosting.bounds) {
-            darkHosting.cacheDisplay(in: darkHosting.bounds, to: rep)
-            if let png = rep.representation(using: NSBitmapImageRep.FileType.png, properties: [:]) {
-                try? png.write(to: URL(fileURLWithPath: "\(artifactDir)/doto_actual_ui_dark.png"))
-            }
+            DotoPopoverView(taskManager: taskManager, noteManager: noteManager)
+                .environment(\.colorScheme, .dark)
+                .shadow(color: Color.black.opacity(0.65), radius: 30, x: 0, y: 18)
+                .shadow(color: Color.black.opacity(0.40), radius: 8, x: 0, y: 4)
         }
+        .frame(width: 480, height: 590)
 
-        // Render Light Mode
-        let lightView = DotoPopoverView(taskManager: manager)
-            .environment(\.colorScheme, .light)
-            .frame(width: 350, height: 460)
+        render2xRetina(view: tasksDarkCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_tasks_dark.png")
+        render2xRetina(view: tasksDarkCard, size: CGSize(width: 480, height: 590), path: "\(artifactDir)/doto_actual_ui_dark.png")
 
-        let lightWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 350, height: 460),
-            styleMask: [.borderless],
-            backing: .buffered,
-            defer: false
-        )
-        let lightHosting = NSHostingView(rootView: lightView)
-        lightHosting.frame = NSRect(x: 0, y: 0, width: 350, height: 460)
-        lightWindow.contentView = lightHosting
-        lightHosting.layoutSubtreeIfNeeded()
-
-        if let rep = lightHosting.bitmapImageRepForCachingDisplay(in: lightHosting.bounds) {
-            lightHosting.cacheDisplay(in: lightHosting.bounds, to: rep)
-            if let png = rep.representation(using: NSBitmapImageRep.FileType.png, properties: [:]) {
-                try? png.write(to: URL(fileURLWithPath: "\(artifactDir)/doto_actual_ui_light.png"))
+        // 2. Notes View Dark Mode
+        let notesDarkWindow = VStack(spacing: 10) {
+            HStack(spacing: 8) {
+                ConcentricDotButton(isActive: false) {}
+                SquareTabButton(isActive: true) {}
+                Text("notes")
+                    .font(.premium(12, weight: .medium))
+                    .foregroundColor(Color.gray)
+                Spacer()
+                MenuDot {}
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+
+            NotesView(noteManager: noteManager)
         }
+        .padding(.bottom, 12)
+        .frame(width: 350)
+        .liquidGlassWindow(cornerRadius: 14)
+        .environment(\.colorScheme, .dark)
+
+        let notesDarkCard = ZStack {
+            RadialGradient(
+                colors: [Color(white: 0.16), Color(white: 0.08), Color(white: 0.03)],
+                center: .center,
+                startRadius: 40,
+                endRadius: 420
+            )
+
+            notesDarkWindow
+                .shadow(color: Color.black.opacity(0.65), radius: 30, x: 0, y: 18)
+                .shadow(color: Color.black.opacity(0.40), radius: 8, x: 0, y: 4)
+        }
+        .frame(width: 480, height: 590)
+
+        render2xRetina(view: notesDarkCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_due_dark.png")
+        render2xRetina(view: notesDarkCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_notes_dark.png")
+        render2xRetina(view: notesDarkCard, size: CGSize(width: 480, height: 590), path: "\(artifactDir)/doto_notes_ui_dark.png")
+
+        // 3. Notes View Light Mode
+        let notesLightWindow = VStack(spacing: 10) {
+            HStack(spacing: 8) {
+                ConcentricDotButton(isActive: false) {}
+                SquareTabButton(isActive: true) {}
+                Text("notes")
+                    .font(.premium(12, weight: .medium))
+                    .foregroundColor(Color.gray)
+                Spacer()
+                MenuDot {}
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+
+            NotesView(noteManager: noteManager)
+        }
+        .padding(.bottom, 12)
+        .frame(width: 350)
+        .liquidGlassWindow(cornerRadius: 14)
+        .environment(\.colorScheme, .light)
+
+        let notesLightCard = ZStack {
+            RadialGradient(
+                colors: [Color(white: 0.98), Color(white: 0.92), Color(white: 0.86)],
+                center: .center,
+                startRadius: 40,
+                endRadius: 420
+            )
+
+            notesLightWindow
+                .shadow(color: Color.black.opacity(0.18), radius: 30, x: 0, y: 18)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+        }
+        .frame(width: 480, height: 590)
+
+        render2xRetina(view: notesLightCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_notes_light.png")
+        render2xRetina(view: notesLightCard, size: CGSize(width: 480, height: 590), path: "\(artifactDir)/doto_notes_ui_light.png")
+
+        // 4. Tasks View Light Mode
+        let tasksLightCard = ZStack {
+            RadialGradient(
+                colors: [Color(white: 0.98), Color(white: 0.92), Color(white: 0.86)],
+                center: .center,
+                startRadius: 40,
+                endRadius: 420
+            )
+
+            DotoPopoverView(taskManager: taskManager, noteManager: noteManager)
+                .environment(\.colorScheme, .light)
+                .shadow(color: Color.black.opacity(0.18), radius: 30, x: 0, y: 18)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+        }
+        .frame(width: 480, height: 590)
+
+        render2xRetina(view: tasksLightCard, size: CGSize(width: 480, height: 590), path: "\(assetsDir)/doto_tasks_light.png")
+        render2xRetina(view: tasksLightCard, size: CGSize(width: 480, height: 590), path: "\(artifactDir)/doto_actual_ui_light.png")
     }
 
     @MainActor

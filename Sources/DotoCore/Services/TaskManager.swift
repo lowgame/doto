@@ -221,7 +221,12 @@ public final class TaskManager: ObservableObject {
         return dotoFolder.appendingPathComponent("history.json")
     }
 
+    private var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
     private var iCloudDocsURL: URL? {
+        guard !isRunningTests else { return nil }
         let home = fileManager.homeDirectoryForCurrentUser
         let cloudDocs = home.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs/doto", isDirectory: true)
         if fileManager.fileExists(atPath: home.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs").path) {
@@ -234,6 +239,7 @@ public final class TaskManager: ObservableObject {
     }
 
     private var iCloudHistoryURL: URL? {
+        guard !isRunningTests else { return nil }
         let home = fileManager.homeDirectoryForCurrentUser
         let cloudDocs = home.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs/doto", isDirectory: true)
         if fileManager.fileExists(atPath: home.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs").path) {
