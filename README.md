@@ -8,6 +8,7 @@
 [![macOS 14+](https://img.shields.io/badge/macOS-14.0%2B-black?style=flat-square&logo=apple)](https://github.com/lowgame/doto)
 [![Swift 5.10 / 6](https://img.shields.io/badge/Swift-6.0-orange?style=flat-square&logo=swift)](https://swift.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
+[![X (Twitter)](https://img.shields.io/badge/X-@hiimthelowgame-black?style=flat-square&logo=x)](https://x.com/hiimthelowgame)
 
 <br/>
 
@@ -163,6 +164,10 @@ doto/
 
 ---
 
-## License
+## Author & License
 
-Released under the [MIT License](LICENSE). Created by [Ahmet Kamer (@lowgame)](https://github.com/lowgame).
+Created by **Ahmet Kamer**  
+- **X (Twitter)**: [@hiimthelowgame](https://x.com/hiimthelowgame)  
+- **GitHub**: [@lowgame](https://github.com/lowgame)  
+
+Released under the [MIT License](LICENSE).

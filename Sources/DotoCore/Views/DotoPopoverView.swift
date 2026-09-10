@@ -195,6 +195,19 @@ public struct DotoPopoverView: View {
                 .background(Color.gray.opacity(0.2))
 
             Button(action: {
+                showMenu = false
+                if let url = URL(string: "https://x.com/hiimthelowgame") {
+                    NSWorkspace.shared.open(url)
+                }
+            }) {
+                Text("@hiimthelowgame on X")
+                    .font(.premium(12, weight: .regular))
+                    .foregroundColor(Color.gray)
+                    .padding(.vertical, 2)
+            }
+            .buttonStyle(.plain)
+
+            Button(action: {
                 NSApplication.shared.terminate(nil)
             }) {
                 Text("Quit")
