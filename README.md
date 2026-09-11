@@ -9,7 +9,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 [![X (Twitter)](https://img.shields.io/badge/X-@hiimthelowgame-black?style=flat-square&logo=x)](https://x.com/hiimthelowgame)
 
-<br/>
+<br/><br/>
+
+<img src="assets/app_icon_1024.png" width="120" alt="DOTO Icon" />
+
+<br/><br/>
 
 <p align="center">
   <img src="assets/doto_tasks_dark_v2.png" width="32.5%" alt="Tasks & Habits" />
