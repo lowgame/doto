@@ -4,6 +4,14 @@ import SwiftUI
 final class DotoPanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+
+    override func keyDown(with event: NSEvent) {
+        if (event.charactersIgnoringModifiers?.lowercased() == "s" || event.keyCode == 1) && event.modifierFlags.contains(.command) {
+            NotificationCenter.default.post(name: .dotoTriggerSave, object: nil)
+            return
+        }
+        super.keyDown(with: event)
+    }
 }
 
 @MainActor
@@ -36,6 +44,29 @@ public final class DotoPanelController: NSObject, NSWindowDelegate {
 
     private func setupMainMenu() {
         let mainMenu = NSMenu()
+
+        // App Menu
+        let appMenuItem = NSMenuItem()
+        let appMenu = NSMenu(title: "doto")
+        let launchAtLoginItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLoginAction), keyEquivalent: "")
+        launchAtLoginItem.target = self
+        launchAtLoginItem.state = LaunchAtLoginManager.shared.isEnabled ? .on : .off
+        appMenu.addItem(launchAtLoginItem)
+        appMenu.addItem(NSMenuItem.separator())
+        appMenu.addItem(withTitle: "Quit doto", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenuItem.submenu = appMenu
+        mainMenu.addItem(appMenuItem)
+
+        // File Menu
+        let fileMenuItem = NSMenuItem()
+        let fileMenu = NSMenu(title: "File")
+        let saveItem = NSMenuItem(title: "Save to iCloud", action: #selector(saveToiCloudAction), keyEquivalent: "s")
+        saveItem.target = self
+        fileMenu.addItem(saveItem)
+        fileMenuItem.submenu = fileMenu
+        mainMenu.addItem(fileMenuItem)
+
+        // Edit Menu
         let editMenuItem = NSMenuItem()
         let editMenu = NSMenu(title: "Edit")
 
@@ -51,6 +82,15 @@ public final class DotoPanelController: NSObject, NSWindowDelegate {
         editMenuItem.submenu = editMenu
         mainMenu.addItem(editMenuItem)
         NSApp.mainMenu = mainMenu
+    }
+
+    @objc private func toggleLaunchAtLoginAction() {
+        LaunchAtLoginManager.shared.toggle()
+        setupMainMenu()
+    }
+
+    @objc private func saveToiCloudAction() {
+        NotificationCenter.default.post(name: .dotoTriggerSave, object: nil)
     }
 
     // MARK: - Status Item Setup
@@ -212,4 +252,8 @@ public final class DotoPanelController: NSObject, NSWindowDelegate {
         }
         updatePanelContent()
     }
+}
+
+extension Notification.Name {
+    public static let dotoTriggerSave = Notification.Name("dotoTriggerSave")
 }

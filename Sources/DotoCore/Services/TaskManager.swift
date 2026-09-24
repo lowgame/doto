@@ -251,13 +251,18 @@ public final class TaskManager: ObservableObject {
         return nil
     }
 
+    public func saveAllToCloud() {
+        saveTasks()
+        saveHistory()
+    }
+
     private func saveTasks() {
         do {
             let data = try JSONEncoder().encode(tasks)
             try data.write(to: localDataURL, options: .atomic)
 
             if let cloudURL = iCloudDocsURL {
-                try? data.write(to: cloudURL, options: .atomic)
+                try? data.write(to: cloudURL)
             }
         } catch {
             print("[doto] Failed to save tasks: \(error)")
@@ -270,7 +275,7 @@ public final class TaskManager: ObservableObject {
             try data.write(to: localHistoryURL, options: .atomic)
 
             if let cloudURL = iCloudHistoryURL {
-                try? data.write(to: cloudURL, options: .atomic)
+                try? data.write(to: cloudURL)
             }
         } catch {
             print("[doto] Failed to save history: \(error)")

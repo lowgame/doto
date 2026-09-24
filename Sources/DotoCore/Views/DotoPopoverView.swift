@@ -11,7 +11,9 @@ public struct DotoPopoverView: View {
     @State private var showHistory: Bool = false
     @State private var showNotes: Bool = false
     @State private var copyFeedback: Bool = false
+    @State private var isSavedToCloudOverlayVisible: Bool = false
     @State private var confirmingDeleteId: UUID? = nil
+    @ObservedObject private var launchManager = LaunchAtLoginManager.shared
     @AppStorage("appTheme") private var appTheme: String = "system"
     @Environment(\.colorScheme) var colorScheme
 
@@ -36,26 +38,62 @@ public struct DotoPopoverView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 10) {
-            topBarView
+        ZStack {
+            VStack(spacing: 10) {
+                topBarView
 
-            if showHistory {
-                historyView
-            } else if showNotes {
-                NotesView(noteManager: noteManager)
-            } else {
-                TaskInputView { title, isRepeat, dueDate in
-                    taskManager.addTask(title: title, isRepeat: isRepeat, dueDate: dueDate)
+                if showHistory {
+                    historyView
+                } else if showNotes {
+                    NotesView(noteManager: noteManager)
+                } else {
+                    TaskInputView { title, isRepeat, dueDate in
+                        taskManager.addTask(title: title, isRepeat: isRepeat, dueDate: dueDate)
+                    }
+                    .padding(.horizontal, 16)
+
+                    taskListSection
                 }
-                .padding(.horizontal, 16)
+            }
+            .padding(.bottom, 12)
+            .frame(width: 350)
+            .liquidGlassWindow(cornerRadius: 14)
 
-                taskListSection
+            // Full-Window "saved to icloud" Feedback Overlay
+            if isSavedToCloudOverlayVisible {
+                ZStack {
+                    (colorScheme == .dark ? Color.black : Color.white).opacity(0.88)
+                        .edgesIgnoringSafeArea(.all)
+
+                    VStack(spacing: 8) {
+                        Image(systemName: "icloud.fill")
+                            .font(.system(size: 32, weight: .semibold))
+                            .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+
+                        Text("saved to icloud")
+                            .font(.premium(14, weight: .semibold))
+                            .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                    }
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(colorScheme == .dark ? Color.black : Color.white)
+                            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.6 : 0.2), radius: 20, x: 0, y: 6)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                }
+                .transition(.opacity)
+                .zIndex(1000)
             }
         }
-        .padding(.bottom, 12)
-        .frame(width: 350)
-        .liquidGlassWindow(cornerRadius: 14)
         .preferredColorScheme(preferredScheme)
+        .onReceive(NotificationCenter.default.publisher(for: .dotoTriggerSave)) { _ in
+            triggerCloudSaveHUD()
+        }
     }
 
     // MARK: - Top Bar
@@ -162,6 +200,46 @@ public struct DotoPopoverView: View {
                     .font(.premium(12, weight: .regular))
                     .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                     .padding(.vertical, 2)
+            }
+            .buttonStyle(.plain)
+
+            Divider()
+                .background(Color.gray.opacity(0.2))
+
+            Button(action: {
+                launchManager.toggle()
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: launchManager.isEnabled ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 11.5))
+                        .foregroundColor(launchManager.isEnabled ? (colorScheme == .dark ? Color.white : Color.black) : Color.gray)
+                    Text("Launch at Login")
+                        .font(.premium(12, weight: .regular))
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                }
+                .padding(.vertical, 2)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button(action: {
+                showMenu = false
+                triggerCloudSaveHUD()
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "icloud")
+                        .font(.system(size: 11.5))
+                        .foregroundColor(Color.gray)
+                    Text("Save to iCloud")
+                        .font(.premium(12, weight: .regular))
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                    Spacer()
+                    Text("⌘S")
+                        .font(.premium(10.5, weight: .regular))
+                        .foregroundColor(Color.gray)
+                }
+                .padding(.vertical, 2)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -362,5 +440,21 @@ public struct DotoPopoverView: View {
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    public func triggerCloudSaveHUD() {
+        taskManager.saveAllToCloud()
+        noteManager.saveAllToCloud()
+        withAnimation(.easeOut(duration: 0.15)) {
+            isSavedToCloudOverlayVisible = true
+        }
+        Task {
+            try? await Task.sleep(nanoseconds: 850_000_000)
+            await MainActor.run {
+                withAnimation(.easeIn(duration: 0.2)) {
+                    isSavedToCloudOverlayVisible = false
+                }
+            }
+        }
     }
 }

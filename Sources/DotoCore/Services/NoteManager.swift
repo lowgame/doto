@@ -130,12 +130,16 @@ public final class NoteManager: ObservableObject {
         return nil
     }
 
+    public func saveAllToCloud() {
+        saveNotes()
+    }
+
     public func saveNotes() {
         do {
             let data = try JSONEncoder().encode(notes)
             try data.write(to: localDataURL, options: .atomic)
             if let cloudURL = iCloudDocsURL {
-                try? data.write(to: cloudURL, options: .atomic)
+                try? data.write(to: cloudURL)
             }
         } catch {
             print("[doto] Failed to save notes: \(error)")
