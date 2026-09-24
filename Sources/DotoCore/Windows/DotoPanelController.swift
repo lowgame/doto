@@ -35,8 +35,11 @@ public final class DotoPanelController: NSObject, NSWindowDelegate {
         setupStatusItem()
         setupPanel()
         NotificationManager.shared.requestAuthorization()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-            self?.statusItemClicked()
+        setupFamilyOObservers()
+        if statusItem?.isVisible == true {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                self?.statusItemClicked()
+            }
         }
     }
 
@@ -251,6 +254,74 @@ public final class DotoPanelController: NSObject, NSWindowDelegate {
             }
         }
         updatePanelContent()
+    }
+
+    public func closePanel() {
+        closeDockedPanel()
+    }
+
+    // MARK: - Family O Integration
+
+    private func setupFamilyOObservers() {
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(handleFamilyOToggle),
+            name: Notification.Name("family.o.doto.toggle"),
+            object: nil
+        )
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(handleFamilyOSaveAll),
+            name: Notification.Name("family.o.saveAll"),
+            object: nil
+        )
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(handleFamilyOHubState),
+            name: Notification.Name("family.o.hubState"),
+            object: nil
+        )
+        checkFamilyOHubRunning()
+    }
+
+    private func checkFamilyOHubRunning() {
+        let isHubRunning = NSWorkspace.shared.runningApplications.contains {
+            $0.bundleIdentifier == "com.family-o.hub" || $0.localizedName?.lowercased() == "o"
+        }
+        statusItem?.isVisible = !isHubRunning
+    }
+
+    @objc private func handleFamilyOHubState(_ notification: Notification) {
+        if let isRunning = notification.userInfo?["isRunning"] as? Bool {
+            statusItem?.isVisible = !isRunning
+        } else {
+            checkFamilyOHubRunning()
+        }
+    }
+
+    @objc private func handleFamilyOToggle() {
+        guard let panel = panel else { return }
+        if panel.isVisible {
+            closeDockedPanel()
+        } else {
+            if let button = statusItem?.button, statusItem?.isVisible == true {
+                showDockedPanel(relativeTo: button)
+            } else {
+                if let screen = NSScreen.main {
+                    let frame = screen.visibleFrame
+                    let x = frame.maxX - panel.frame.width - 24
+                    let y = frame.maxY - panel.frame.height - 8
+                    panel.setFrameOrigin(NSPoint(x: max(10, x), y: y))
+                }
+                panel.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+                panel.makeFirstResponder(panel.contentView)
+            }
+        }
+    }
+
+    @objc private func handleFamilyOSaveAll() {
+        NotificationCenter.default.post(name: .dotoTriggerSave, object: nil)
     }
 }
 
